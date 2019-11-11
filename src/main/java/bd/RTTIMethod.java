@@ -1,5 +1,6 @@
 package bd;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -12,8 +13,19 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 
 public class RTTIMethod extends AbstractGenericUDAFResolver {
+
+    static final Logger LOG = LoggerFactory.getLogger(GenericUDAFMin.class.getName());
+
     @Override
     public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
         if (parameters.length != 2) {
@@ -26,7 +38,6 @@ public class RTTIMethod extends AbstractGenericUDAFResolver {
     public static class GenericUDAFMin extends GenericUDAFEvaluator{
 
         private PrimitiveObjectInspector inputOI;
-
 
         static class TimeAndIdAgg implements AggregationBuffer {
 
@@ -62,7 +73,7 @@ public class RTTIMethod extends AbstractGenericUDAFResolver {
             String time = PrimitiveObjectInspectorUtils.getString(objects[0], inputOI);
             String id =  PrimitiveObjectInspectorUtils.getString(objects[1], inputOI);
             TimeAndIdAgg agg = (TimeAndIdAgg)aggregationBuffer;
-            if(agg.time ==null || agg.time.compareTo(time)==1){
+            if(agg.time ==null || agg.time.compareTo(time) > 0){
                 agg.time = time;
                 agg.id= id;
             }
@@ -78,7 +89,7 @@ public class RTTIMethod extends AbstractGenericUDAFResolver {
             String[] agg2 = PrimitiveObjectInspectorUtils.getString(o, inputOI).split(",");
             String time = agg2[0];
             String id = agg2[1];
-            if(agg.time ==null || agg.time.compareTo(time)==1){
+            if(agg.time ==null || agg.time.compareTo(time) > 0){
                 agg.time = time;
                 agg.id = id;
             }
@@ -88,5 +99,7 @@ public class RTTIMethod extends AbstractGenericUDAFResolver {
             TimeAndIdAgg agg = (TimeAndIdAgg)aggregationBuffer;
             return new Text(agg.id);
         }
+
+
     }
 }
