@@ -13,7 +13,7 @@
   <url>http://www.example.com</url>
 
   <properties>
-    <hadoop.version>2.7.0</hadoop.version>
+    <hadoop.version>2.10.1</hadoop.version>
     <hive.version>2.2.0</hive.version>
   </properties>
 
